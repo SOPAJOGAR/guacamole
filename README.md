@@ -273,4 +273,4 @@ Se encontrar problemas:
 
 ---
 
-**Desenvolvido com ❤️ para a comunidade Torrentio Brazuca** 
+**Desenvolvido com ❤️ por rdealoci/SOPAJOGAR** 
