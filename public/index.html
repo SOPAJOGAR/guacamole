@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Torrentio Web - Busca de Torrents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .popular-movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 15px;
+        }
+
+        .movie-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .movie-year {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .results-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .results-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .quality-filter {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e1e5e9;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .torrent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .torrent-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .torrent-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .torrent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .torrent-title {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .torrent-quality {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .quality-4k { background: #ff6b6b; color: white; }
+        .quality-1080p { background: #4ecdc4; color: white; }
+        .quality-720p { background: #45b7d1; color: white; }
+        .quality-480p { background: #96ceb4; color: white; }
+        .quality-unknown { background: #ddd; color: #666; }
+
+        .torrent-details {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .torrent-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .torrent-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-magnet {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-magnet:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-copy {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e1e5e9;
+        }
+
+        .btn-copy:hover {
+            background: #e9ecef;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .popular-movies {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .torrent-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .torrent-details {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .torrent-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Torrentio Web</h1>
+            <p>Busca torrents em múltiplas fontes com interface moderna</p>
+        </div>
+
+        <div class="search-container">
+            <form class="search-form" id="searchForm">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Digite o nome do filme, série ou programa..."
+                    required
+                >
+                <button type="submit" class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </form>
+
+            <div class="popular-movies" id="popularMovies">
+                <!-- Popular movies will be loaded here -->
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">
+                    Resultados encontrados
+                </div>
+                <div class="quality-filter" id="qualityFilter">
+                    <button class="filter-btn active" data-quality="all">Todos</button>
+                    <button class="filter-btn" data-quality="4K">4K</button>
+                    <button class="filter-btn" data-quality="1080p">1080p</button>
+                    <button class="filter-btn" data-quality="720p">720p</button>
+                </div>
+            </div>
+            <div class="torrent-list" id="torrentList">
+                <!-- Results will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        let currentResults = [];
+        let currentFilter = 'all';
+
+        // Elementos DOM
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsCount = document.getElementById('resultsCount');
+        const torrentList = document.getElementById('torrentList');
+        const popularMovies = document.getElementById('popularMovies');
+        const qualityFilter = document.getElementById('qualityFilter');
+
+        // Carregar filmes populares
+        async function loadPopularMovies() {
+            try {
+                const response = await fetch('/api/popular');
+                const data = await response.json();
+                
+                popularMovies.innerHTML = data.movies.map(movie => `
+                    <div class="movie-card" onclick="searchTorrents('${movie.title}')">
+                        <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZDFlNWU5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbSBub3QgZm91bmQ8L3RleHQ+PC9zdmc+'">
+                        <div class="movie-info">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-year">${movie.year}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar filmes populares:', error);
+            }
+        }
+
+        // Buscar torrents
+        async function searchTorrents(query) {
+            try {
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+                
+                resultsContainer.style.display = 'block';
+                torrentList.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Buscando torrents para "${query}"...</p>
+                    </div>
+                `;
+
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                currentResults = data.torrents;
+                displayResults();
+                
+            } catch (error) {
+                console.error('Erro na busca:', error);
+                torrentList.innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erro ao buscar torrents: ${error.message}
+                    </div>
+                `;
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = '<i class="fas fa-search"></i> Buscar';
+            }
+        }
+
+        // Exibir resultados
+        function displayResults() {
+            const filteredResults = currentFilter === 'all' 
+                ? currentResults 
+                : currentResults.filter(torrent => torrent.quality === currentFilter);
+
+            resultsCount.textContent = `${filteredResults.length} resultado(s) encontrado(s)`;
+
+            if (filteredResults.length === 0) {
+                torrentList.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <p>Nenhum torrent encontrado para esta busca.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            torrentList.innerHTML = filteredResults.map(torrent => `
+                <div class="torrent-item">
+                    <div class="torrent-header">
+                        <div class="torrent-title">${torrent.title}</div>
+                        <div class="torrent-quality quality-${torrent.quality.toLowerCase()}">${torrent.quality}</div>
+                    </div>
+                    <div class="torrent-details">
+                        <div class="torrent-detail">
+                            <i class="fas fa-database"></i>
+                            <span>${torrent.size}</span>
+                        </div>
+                        <div class="torrent-detail">
+                            <i class="fas fa-upload"></i>
+                            <span>${torrent.seeders} seeders</span>
+                        </div>
+                        <div class="torrent-detail">
+                            <i class="fas fa-download"></i>
+                            <span>${torrent.leechers} leechers</span>
+                        </div>
+                        <div class="torrent-detail">
+                            <i class="fas fa-tag"></i>
+                            <span>${torrent.source}</span>
+                        </div>
+                    </div>
+                    <div class="torrent-actions">
+                        <button class="action-btn btn-magnet" onclick="openMagnet('${torrent.magnet}')">
+                            <i class="fas fa-magnet"></i> Abrir Magnet
+                        </button>
+                        <button class="action-btn btn-copy" onclick="copyMagnet('${torrent.magnet}')">
+                            <i class="fas fa-copy"></i> Copiar Link
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Abrir magnet link
+        function openMagnet(magnet) {
+            window.open(magnet, '_blank');
+        }
+
+        // Copiar magnet link
+        async function copyMagnet(magnet) {
+            try {
+                await navigator.clipboard.writeText(magnet);
+                alert('Link copiado para a área de transferência!');
+            } catch (error) {
+                console.error('Erro ao copiar:', error);
+                // Fallback para navegadores antigos
+                const textArea = document.createElement('textarea');
+                textArea.value = magnet;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Link copiado para a área de transferência!');
+            }
+        }
+
+
+
+        // Event listeners
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                searchTorrents(query);
+            }
+        });
+
+        // Filtros de qualidade
+        qualityFilter.addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                // Remove active class from all buttons
+                qualityFilter.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                e.target.classList.add('active');
+                
+                // Update filter
+                currentFilter = e.target.dataset.quality;
+                displayResults();
+            }
+        });
+
+        // Carregar filmes populares ao iniciar
+        loadPopularMovies();
+    </script>
+</body>
+</html> 
